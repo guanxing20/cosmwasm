@@ -6,8 +6,8 @@ use core::ops::{
 };
 
 use crate::errors::{
-    CheckedMultiplyFractionError, CheckedMultiplyRatioError, DivideByZeroError, OverflowError,
-    OverflowOperation, StdError,
+    CheckedMultiplyFractionError, CheckedMultiplyRatioError, DivideByZeroError, ErrorKind,
+    OverflowError, OverflowOperation, StdError,
 };
 use crate::forward_ref::{forward_ref_binop, forward_ref_op_assign};
 use crate::{
@@ -37,7 +37,19 @@ use super::num_consts::NumConsts;
 /// let b = Uint64::from(70u32);
 /// assert_eq!(b.u64(), 70);
 /// ```
-#[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, schemars::JsonSchema)]
+#[derive(
+    Copy,
+    Clone,
+    Default,
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    schemars::JsonSchema,
+    cw_schema::Schemaifier,
+)]
+#[schemaifier(type = cw_schema::NodeType::Integer { precision: 64, signed: false })]
 pub struct Uint64(#[schemars(with = "String")] pub(crate) u64);
 
 impl_int_serde!(Uint64);
@@ -333,7 +345,9 @@ impl TryFrom<&str> for Uint64 {
     fn try_from(val: &str) -> Result<Self, Self::Error> {
         match val.parse::<u64>() {
             Ok(u) => Ok(Uint64(u)),
-            Err(e) => Err(StdError::generic_err(format!("Parsing u64: {e}"))),
+            Err(e) => {
+                Err(StdError::msg(format_args!("Parsing u64: {e}")).with_kind(ErrorKind::Parsing))
+            }
         }
     }
 }

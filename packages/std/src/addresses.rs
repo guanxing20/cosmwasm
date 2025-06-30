@@ -1,7 +1,6 @@
 use alloc::{borrow::Cow, string::String, vec::Vec};
 use core::fmt;
 use core::ops::Deref;
-use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use sha2::{
     digest::{Digest, Update},
@@ -28,8 +27,19 @@ use crate::{HexBinary, __internal::forward_ref_partial_eq};
 /// a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String`
 /// instance.
 #[derive(
-    Serialize, Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, JsonSchema,
+    Serialize,
+    Deserialize,
+    Clone,
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    schemars::JsonSchema,
+    cw_schema::Schemaifier,
 )]
+#[schemaifier(type = cw_schema::NodeType::Address)]
 pub struct Addr(String);
 
 forward_ref_partial_eq!(Addr, Addr);
@@ -299,8 +309,7 @@ impl fmt::Display for Instantiate2AddressError {
 ///     let canonical_creator = deps.api.addr_canonicalize(env.contract.address.as_str())?;
 ///     let checksum = HexBinary::from_hex("9af782a3a1bcbcd22dbb6a45c751551d9af782a3a1bcbcd22dbb6a45c751551d")?;
 ///     let salt = b"instance 1231";
-///     let canonical_addr = instantiate2_address(&checksum, &canonical_creator, salt)
-///         .map_err(|_| StdError::generic_err("Could not calculate addr"))?;
+///     let canonical_addr = instantiate2_address(&checksum, &canonical_creator, salt)?;
 ///     let addr = deps.api.addr_humanize(&canonical_addr)?;
 ///
 /// #   Ok(Default::default())

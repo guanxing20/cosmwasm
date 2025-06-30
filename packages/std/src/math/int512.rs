@@ -6,7 +6,9 @@ use core::ops::{
 };
 use core::str::FromStr;
 
-use crate::errors::{DivideByZeroError, DivisionError, OverflowError, OverflowOperation, StdError};
+use crate::errors::{
+    DivideByZeroError, DivisionError, ErrorKind, OverflowError, OverflowOperation, StdError,
+};
 use crate::forward_ref::{forward_ref_binop, forward_ref_op_assign};
 use crate::{
     Int128, Int256, Int64, Uint128, Uint256, Uint512, Uint64, __internal::forward_ref_partial_eq,
@@ -46,7 +48,19 @@ use super::num_consts::NumConsts;
 /// assert_eq!(a, b);
 /// assert_eq!(a, c);
 /// ```
-#[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, schemars::JsonSchema)]
+#[derive(
+    Copy,
+    Clone,
+    Default,
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    schemars::JsonSchema,
+    cw_schema::Schemaifier,
+)]
+#[schemaifier(type = cw_schema::NodeType::Integer { precision: 512, signed: true })]
 pub struct Int512(#[schemars(with = "String")] pub(crate) I512);
 
 impl_int_serde!(Int512);
@@ -420,7 +434,10 @@ impl FromStr for Int512 {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match I512::from_str_radix(s, 10) {
             Ok(u) => Ok(Self(u)),
-            Err(e) => Err(StdError::generic_err(format!("Parsing Int512: {e}"))),
+            Err(e) => {
+                Err(StdError::msg(format_args!("Parsing Int512: {e}"))
+                    .with_kind(ErrorKind::Parsing))
+            }
         }
     }
 }

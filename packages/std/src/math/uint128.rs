@@ -7,8 +7,8 @@ use core::ops::{
 use core::str::FromStr;
 
 use crate::errors::{
-    CheckedMultiplyFractionError, CheckedMultiplyRatioError, DivideByZeroError, OverflowError,
-    OverflowOperation, StdError,
+    CheckedMultiplyFractionError, CheckedMultiplyRatioError, DivideByZeroError, ErrorKind,
+    OverflowError, OverflowOperation, StdError,
 };
 use crate::forward_ref::{forward_ref_binop, forward_ref_op_assign};
 use crate::{
@@ -41,7 +41,19 @@ use super::num_consts::NumConsts;
 /// let c = Uint128::from(70u32);
 /// assert_eq!(c.u128(), 70);
 /// ```
-#[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, schemars::JsonSchema)]
+#[derive(
+    Copy,
+    Clone,
+    Default,
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    schemars::JsonSchema,
+    cw_schema::Schemaifier,
+)]
+#[schemaifier(type = cw_schema::NodeType::Integer { precision: 128, signed: false })]
 pub struct Uint128(#[schemars(with = "String")] pub(crate) u128);
 
 impl_int_serde!(Uint128);
@@ -353,7 +365,9 @@ impl FromStr for Uint128 {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.parse::<u128>() {
             Ok(u) => Ok(Uint128(u)),
-            Err(e) => Err(StdError::generic_err(format!("Parsing u128: {e}"))),
+            Err(e) => {
+                Err(StdError::msg(format_args!("Parsing u128: {e}")).with_kind(ErrorKind::Parsing))
+            }
         }
     }
 }

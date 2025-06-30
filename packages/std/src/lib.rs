@@ -63,9 +63,9 @@ pub use crate::encoding::{from_base64, from_hex, to_base64, to_hex};
 pub use crate::errors::{
     AggregationError, CheckedFromRatioError, CheckedMultiplyFractionError,
     CheckedMultiplyRatioError, CoinFromStrError, CoinsError, ConversionOverflowError,
-    DivideByZeroError, DivisionError, OverflowError, OverflowOperation, PairingEqualityError,
-    RecoverPubkeyError, RoundDownOverflowError, RoundUpOverflowError, StdError, StdResult,
-    SystemError, VerificationError,
+    DivideByZeroError, DivisionError, ErrorKind as StdErrorKind, OverflowError, OverflowOperation,
+    PairingEqualityError, RecoverPubkeyError, RoundDownOverflowError, RoundUpOverflowError,
+    StdError, StdResult, StdResultExt, SystemError, VerificationError,
 };
 pub use crate::hex_binary::HexBinary;
 pub use crate::ibc::IbcChannelOpenResponse;
@@ -99,7 +99,7 @@ pub use crate::query::{
     DelegationTotalRewardsResponse, DelegatorReward, DelegatorValidatorsResponse,
     DelegatorWithdrawAddressResponse, DenomMetadataResponse, DistributionQuery, FullDelegation,
     GrpcQuery, IbcQuery, PortIdResponse, QueryRequest, RawRangeEntry, RawRangeResponse,
-    StakingQuery, SupplyResponse, Validator, ValidatorResponse, WasmQuery,
+    StakingQuery, SupplyResponse, Validator, ValidatorMetadata, ValidatorResponse, WasmQuery,
 };
 
 #[cfg(all(feature = "stargate", feature = "cosmwasm_1_2"))]

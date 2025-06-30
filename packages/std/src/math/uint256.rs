@@ -8,7 +8,7 @@ use core::str::FromStr;
 
 use crate::errors::{
     CheckedMultiplyFractionError, CheckedMultiplyRatioError, ConversionOverflowError,
-    DivideByZeroError, OverflowError, OverflowOperation, StdError,
+    DivideByZeroError, ErrorKind, OverflowError, OverflowOperation, StdError,
 };
 use crate::forward_ref::{forward_ref_binop, forward_ref_op_assign};
 use crate::{
@@ -46,7 +46,19 @@ use super::num_consts::NumConsts;
 /// assert_eq!(a, b);
 /// assert_eq!(a, c);
 /// ```
-#[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, schemars::JsonSchema)]
+#[derive(
+    Copy,
+    Clone,
+    Default,
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    schemars::JsonSchema,
+    cw_schema::Schemaifier,
+)]
+#[schemaifier(type = cw_schema::NodeType::Integer { precision: 256, signed: false })]
 pub struct Uint256(#[schemars(with = "String")] pub(crate) U256);
 
 impl_int_serde!(Uint256);
@@ -432,12 +444,16 @@ impl FromStr for Uint256 {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.is_empty() {
-            return Err(StdError::generic_err("Parsing u256: received empty string"));
+            return Err(
+                StdError::msg("Parsing u256: received empty string").with_kind(ErrorKind::Parsing)
+            );
         }
 
         match U256::from_str_radix(s, 10) {
             Ok(u) => Ok(Uint256(u)),
-            Err(e) => Err(StdError::generic_err(format!("Parsing u256: {e}"))),
+            Err(e) => {
+                Err(StdError::msg(format_args!("Parsing u256: {e}")).with_kind(ErrorKind::Parsing))
+            }
         }
     }
 }

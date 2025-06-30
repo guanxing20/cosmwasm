@@ -7,7 +7,8 @@ use core::ops::{
 use core::str::FromStr;
 
 use crate::errors::{
-    ConversionOverflowError, DivideByZeroError, OverflowError, OverflowOperation, StdError,
+    ConversionOverflowError, DivideByZeroError, ErrorKind, OverflowError, OverflowOperation,
+    StdError,
 };
 use crate::forward_ref::{forward_ref_binop, forward_ref_op_assign};
 use crate::{
@@ -48,7 +49,19 @@ use super::num_consts::NumConsts;
 /// assert_eq!(a, b);
 /// assert_eq!(a, c);
 /// ```
-#[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, schemars::JsonSchema)]
+#[derive(
+    Copy,
+    Clone,
+    Default,
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    schemars::JsonSchema,
+    cw_schema::Schemaifier,
+)]
+#[schemaifier(type = cw_schema::NodeType::Integer { precision: 512, signed: false })]
 pub struct Uint512(#[schemars(with = "String")] pub(crate) U512);
 
 impl_int_serde!(Uint512);
@@ -428,7 +441,9 @@ impl FromStr for Uint512 {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match U512::from_str_radix(s, 10) {
             Ok(u) => Ok(Self(u)),
-            Err(e) => Err(StdError::generic_err(format!("Parsing u512: {e}"))),
+            Err(e) => {
+                Err(StdError::msg(format_args!("Parsing u512: {e}")).with_kind(ErrorKind::Parsing))
+            }
         }
     }
 }

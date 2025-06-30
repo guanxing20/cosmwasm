@@ -4,7 +4,10 @@ use serde::{Deserialize, Deserializer, Serialize};
 use crate::prelude::*;
 
 /// Replicates the cosmos-sdk bank module Metadata type
-#[derive(Serialize, Deserialize, Clone, Default, Debug, PartialEq, Eq, JsonSchema)]
+#[derive(
+    Serialize, Deserialize, Clone, Default, Debug, PartialEq, Eq, JsonSchema, cw_schema::Schemaifier,
+)]
+#[schemaifier(mute_warnings)] // missing support for `deserialize_with`
 pub struct DenomMetadata {
     pub description: String,
     #[serde(deserialize_with = "deserialize_null_default")]
@@ -18,7 +21,10 @@ pub struct DenomMetadata {
 }
 
 /// Replicates the cosmos-sdk bank module DenomUnit type
-#[derive(Serialize, Deserialize, Clone, Default, Debug, PartialEq, Eq, JsonSchema)]
+#[derive(
+    Serialize, Deserialize, Clone, Default, Debug, PartialEq, Eq, JsonSchema, cw_schema::Schemaifier,
+)]
+#[schemaifier(mute_warnings)] // missing support for `deserialize_with`
 pub struct DenomUnit {
     pub denom: String,
     pub exponent: u32,

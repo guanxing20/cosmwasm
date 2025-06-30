@@ -6,7 +6,9 @@ use core::ops::{
 };
 use core::str::FromStr;
 
-use crate::errors::{DivideByZeroError, DivisionError, OverflowError, OverflowOperation, StdError};
+use crate::errors::{
+    DivideByZeroError, DivisionError, ErrorKind, OverflowError, OverflowOperation, StdError,
+};
 use crate::forward_ref::{forward_ref_binop, forward_ref_op_assign};
 use crate::{
     CheckedMultiplyRatioError, Int256, Int512, Int64, Uint128, Uint256, Uint512, Uint64,
@@ -33,7 +35,19 @@ use super::num_consts::NumConsts;
 /// let a = Int128::from(258i128);
 /// assert_eq!(a.i128(), 258);
 /// ```
-#[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, schemars::JsonSchema)]
+#[derive(
+    Copy,
+    Clone,
+    Default,
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    schemars::JsonSchema,
+    cw_schema::Schemaifier,
+)]
+#[schemaifier(type = cw_schema::NodeType::Integer { precision: 128, signed: true })]
 pub struct Int128(#[schemars(with = "String")] pub(crate) i128);
 
 impl_int_serde!(Int128);
@@ -329,7 +343,10 @@ impl FromStr for Int128 {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.parse::<i128>() {
             Ok(u) => Ok(Self(u)),
-            Err(e) => Err(StdError::generic_err(format!("Parsing Int128: {e}"))),
+            Err(e) => {
+                Err(StdError::msg(format_args!("Parsing Int128: {e}"))
+                    .with_kind(ErrorKind::Parsing))
+            }
         }
     }
 }
